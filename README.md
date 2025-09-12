@@ -102,4 +102,4 @@ Diese Datei mischt die Wörter in den Listen zufällig durch. Dies kann nützlic
 
 ---
 by  
-![Logo](https://files.catbox.moe/s0htru.png)## Beschreibung
+![Logo](https://files.catbox.moe/s0htru.png)
