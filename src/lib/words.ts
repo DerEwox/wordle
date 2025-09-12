@@ -1,0 +1,77 @@
+//Lists with words[year][month][day]
+//All words must be in capslock
+//start indicates the year and month where the list starts
+//for german: ÄÖÜ muss zu ae oe ue umgeschrieben werden
+
+export const start = { year: 2025, month: 8 }
+export const words: string[][][] = [
+  [
+    [
+      '', '', '',
+      '', '', '',
+      '', '', '',
+      '', '', '',
+      '', '', '',
+      '', 'BIBLIOTHEK', 'SCHWIMMBAD',
+      'LEBENSLAUF', 'GESCHICHTE', 'HAUSARBEIT',
+      'GESUNDHEIT', 'HOCHSCHULE', 'WASSERFALL',
+      'WIRTSCHAFT', 'FORSCHERIN', 'KUNSTHALLE',
+      'SPIELPLATZ', 'VERWALTUNG', 'ERINNERUNG',
+      ''
+    ],
+    [
+      '',           '',           '',
+      '',           '',           '',
+      '',           'FILMKRITIK', 'PULSMESSER',
+      'LEBERKAESE', 'UMWELTGIFT', 'LOGIZISMUS',
+      'NEBENTRAKT', 'LOGISTISCH', 'MEDITATION',
+      'VEGETATION', 'JUCKPULVER', 'ZIMTSTANGE',
+      'QUERSTANGE', 'BANKKREDIT', 'RUFZEICHEN',
+      'LEVITATION', 'GASFLASCHE', 'SUPPRESSIV',
+      'GARTENZAUN', 'UMHERIRREN', 'JUWELIERIN',
+      'KREISSAEGE', 'PLATONISCH', 'FILMKRITIK'
+    ],
+    [
+      'ENTFERNUNG', 'INHALTSLOS', 'INSENSIBEL',
+      'SCHLAGLOCH', 'BADESAISON', 'THERMOSTAT',
+      'ABFEDERUNG', 'KUNSTSTEIN', 'VORDERMANN',
+      'NICHTSNUTZ', 'ABARBEITEN', 'TEELOEFFEL',
+      'OSTERFEUER', 'TEILERFOLG', 'WORTSCHATZ',
+      'VANILLEEIS', 'RADARFALLE', 'UNWOHLSEIN',
+      'ALLERDINGS', 'SUPERMARKT', 'OBJIZIEREN',
+      'LEGALITAET', 'HYGIENISCH', 'ENGAGEMENT',
+      'CHRISTDORN', 'CLOWNFISCH', 'TROEPFCHEN',
+      'DEMOKRATIE', 'QUELLDATEI', 'MUNDSCHUTZ',
+      'BILDERBUCH'
+    ],
+    [
+      'HAUSBESUCH', 'POPULATION', 'UNVERLETZT',
+      'QUOTIERUNG', 'FILMKRITIK', 'LINGUISTIK',
+      'CORONATEST', 'WEITWINKEL', 'JUGENDLICH',
+      'LEUCHTTURM', 'MERKZETTEL', 'THRONFOLGE',
+      'ZENTRIEREN', 'EDELMETALL', 'ZUGVERKEHR',
+      'GRUNDIEREN', 'YAMSWURZEL', 'ZENTILITER',
+      'LANGWEILIG', 'AKTENNOTIZ', 'JACHTHAFEN',
+      'WASSERROHR', 'QUERFLOETE', 'INDIKATION',
+      'FAHRVERBOT', 'ZUCKERROHR', 'LUFTHUELLE',
+      'WEISSAGUNG', 'DACHTRAUFE', 'SICHERHEIT'
+    ],
+    [
+      'MENSCHLICH', 'VERBINDUNG', 'ROTORBLATT',
+      'DISKUSSION', 'MILCHTUETE', 'KEHLBALKEN',
+      'KOLLATERAL', 'POEKELSALZ', 'ZUSATZZAHL',
+      'VEGANISMUS', 'BADEZIMMER', 'HAUPTSTADT',
+      'OLIVENBAUM', 'WEINKELLER', 'WEIZENMEHL',
+      'FISCHMARKT', 'HASTIGKEIT', 'BANDBREITE',
+      'NOTIZBLOCK', 'ZOTTELBART', 'INFORMATIK',
+      'GALVANISCH', 'FEIERABEND', 'RAFFINIERT',
+      'HAUSNUMMER', 'YOGALEHRER', 'ESKALATION',
+      'QUELLFLUSS', 'FLANKIEREN', 'METALLTUER',
+      'SUFFIZIENT'
+    ]
+  ]
+]
+
+
+
+
