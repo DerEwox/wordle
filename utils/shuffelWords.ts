@@ -1,4 +1,11 @@
-import { words } from '../src/lib/words.ts'
+const words: string[][][] = [
+
+  [
+
+
+  ]
+
+]
 function shuffleAllLevels(arr: string[][][]): string[][][] {
   for(let i = 0; i < arr.length; i++) {
     for(let j = 0; j < arr[i].length; j++) {

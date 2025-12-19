@@ -1,5 +1,6 @@
 import { words } from '../src/lib/words.ts'
 
+
 let errors = 0
 
 const ANSI = {
