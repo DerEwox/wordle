@@ -45,6 +45,7 @@
 	}
 
 	const dayWord = words[wordPointer.year][wordPointer.month][wordPointer.day]
+	console.log("Today's word is: ", dayWord);
 
 	let display: string[][] = Array.from({ length: 12 }, () => new Array<string>(10).fill(''));
 	let displayBg: string[][] = Array.from({ length: 12 }, () => new Array<string>(10).fill(''));

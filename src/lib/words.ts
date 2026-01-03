@@ -3,9 +3,16 @@
 //start indicates the year and month where the list starts
 //for german: ÄÖÜ muss zu ae oe ue umgeschrieben werden
 
-export const start = { year: 2025, month: 8 }
+export const start = { year: 2025, month: 1 }
 export const words: string[][][] = [
-  [
+  [ 
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
     [
       '', '', '',
       '', '', '',
