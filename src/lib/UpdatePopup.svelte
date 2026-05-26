@@ -60,7 +60,7 @@
 			<li>Neue Wörter bis Ende August 2026</li>
 			<li>
 				Wörter werden zuerst in der lokalen Liste gesucht und erst dann bei DWDS.
-				<div class="subline">Schnelleres Überprüfen von Wörtern und <span class="accent-word">neue Wörter wie "Superman"</span> verfügbar.</div>
+				<div class="subline">Schnelleres Überprüfen von Wörtern und <span class="accent-word">neue Wörter wie "Superpower"</span> verfügbar.</div>
 			</li>
 			<li class="streak-item">Die Win-Streak geht verloren, wenn du angefangen hast zu spielen, aber vor einem neuen Tag nicht beendet hast.</li>
 			<li>Unterstützung für angeschlossene Tastaturen</li>

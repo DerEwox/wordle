@@ -73,10 +73,36 @@
 		);
 	}
 
-		function handleKeyDown(event: KeyboardEvent) {
+	function movePointer(delta: number) {
+		const nextCell = Math.min(display[0].length - 1, Math.max(0, pointer.cell + delta));
+		if (nextCell === pointer.cell) return;
+
+		displayBg[pointer.row][pointer.cell] = '';
+		pointer.cell = nextCell;
+		displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
+	}
+
+	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			void onInput('ENTER');
+			return;
+		}
+
+		if (event.key === ' ' || event.key === 'Tab' || event.key === 'ArrowRight') {
+			event.preventDefault();
+			movePointer(1);
+			return;
+		}
+
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			movePointer(-1);
+			return;
+		}
+
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			event.preventDefault();
 			return;
 		}
 
@@ -362,14 +388,15 @@
 		if (disableInput) return;
 
 		if (input === 'BACK') {
-			if (pointer.cell > 0) {
-				if (display[pointer.row][pointer.cell] === '') {
+			if (display[pointer.row][pointer.cell] === '') {
+				if (pointer.cell > 0) {
 					displayBg[pointer.row][pointer.cell] = '';
 					pointer.cell -= 1;
 				}
-				display[pointer.row][pointer.cell] = '';
-				displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
 			}
+
+			display[pointer.row][pointer.cell] = '';
+			displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
 		} else if (input === 'ENTER') {
 			displayBg[pointer.row][pointer.cell] = '';
 			await evaluate();
