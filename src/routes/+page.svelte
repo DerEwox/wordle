@@ -3,7 +3,7 @@
 
 	import { isWordValid } from './checkWordDWDS';
 
-	// @ts-ignore
+	// @ts-expect-error - canvas-confetti has incomplete TypeScript type definitions
 	import Confetti from 'canvas-confetti';
 	import { onMount } from 'svelte';
 	import {words, start as wordListStart} from '../lib/words'
@@ -47,7 +47,7 @@
 	let displayBg: string[][] = Array.from({ length: 10 }, () => new Array<string>(10).fill(''));
 	displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
 
-	let confettiInterval: number;
+	let confettiInterval: ReturnType<typeof setInterval> | undefined;
 	//Speichern ------------------------------------------------------------------------
 
 	let stats = {
@@ -56,6 +56,7 @@
 		currentStreak: 0,
 		bestStreak: 0,
 		lastPlayed: JSON.stringify(today),
+		playedCountedDate: '',
 		distribution: Array(12).fill(0)
 	};
 
@@ -68,17 +69,35 @@
 		);
 	}
 
-	function isYesterday(date: Date): boolean {
-		const today = new Date();
-		const yesterday = new Date(today);
-		yesterday.setDate(today.getDate() - 1); // einen Tag zurück
+		function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void onInput('ENTER');
+			return;
+		}
 
-		return (
-			date.getFullYear() === yesterday.getFullYear() &&
-			date.getMonth() === yesterday.getMonth() &&
-			date.getDate() === yesterday.getDate()
-		);
+		if (event.key === 'Backspace') {
+			event.preventDefault();
+			void onInput('BACK');
+			return;
+		}
+
+		if (event.key.length === 1 && /^[a-zA-Z]$/.test(event.key)) {
+			void onInput(event.key.toUpperCase());
+		}
 	}
+
+	// function isYesterday(date: Date): boolean {
+	// 	const today = new Date();
+	// 	const yesterday = new Date(today);
+	// 	yesterday.setDate(today.getDate() - 1); // einen Tag zurück
+
+	// 	return (
+	// 		date.getFullYear() === yesterday.getFullYear() &&
+	// 		date.getMonth() === yesterday.getMonth() &&
+	// 		date.getDate() === yesterday.getDate()
+	// 	);
+	// }
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
@@ -132,8 +151,8 @@
 						const parsedDisplay = JSON.parse(savedDisplay) as string[][];
 						const started = parsedDisplay.some((r) => r.some((c) => c !== ''));
 						if (started) {
+							stats.gamesPlayed += 1;
 							stats.currentStreak = 0;
-							stats.gamesPlayed += 1
 							localStorage.setItem('stats', JSON.stringify(stats));
 							showMessage('Streak verloren', false, 10000);
 						}
@@ -143,6 +162,10 @@
 				}
 			}
 		}
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
 	});
 
 	//Spiel----------------------------------------------------------------------------
@@ -277,10 +300,10 @@
 		if (display[pointer.row].join('') === dayWord) {
 			showMessage('Gewonnen!', true);
 			gameOver = true;
-			stats.gamesPlayed += 1;
 			stats.gamesWon += 1;
 			stats.distribution[pointer.row] += 1;
 			stats.currentStreak += 1;
+			stats.gamesPlayed += 1;
 			if (stats.currentStreak > stats.bestStreak) stats.bestStreak = stats.currentStreak;
 			stats.lastPlayed = today.toISOString();
 			localStorage.setItem('stats', JSON.stringify(stats));
@@ -288,8 +311,8 @@
 		} else if (pointer.row + 1 >= display.length) {
 			showMessage(`Du hast verloren! Das Wort war ${dayWord}`, true);
 			gameOver = true;
-			stats.gamesPlayed += 1;
 			stats.currentStreak = 0;
+			stats.gamesPlayed += 1;
 			stats.lastPlayed = today.toISOString();
 			localStorage.setItem('stats', JSON.stringify(stats));
 		} else {
@@ -310,10 +333,6 @@
 			localStorage.setItem('end', JSON.stringify(true));
 		}
 		disableInput = false;
-
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
 	}
 
 	function setPointer(row: number, cell: number) {
@@ -341,13 +360,13 @@
 			displayBg[pointer.row][pointer.cell] = '';
 			await evaluate();
 		} else {
-			// Count the game as played when the user types the first letter for today's puzzle
-			const todayKey = new Date().toISOString().split('T')[0];
-			if (stats.playedCountedDate !== todayKey) {
-				stats.gamesPlayed += 1;
-				stats.playedCountedDate = todayKey;
-				localStorage.setItem('stats', JSON.stringify(stats));
-			}
+			// const todayKey = new Date().toISOString().split('T')[0];
+			// if (stats.playedCountedDate !== todayKey) {
+			// 	stats.gamesPlayed += 1;
+			// 	stats.playedCountedDate = todayKey;
+			// 	localStorage.setItem('stats', JSON.stringify(stats));
+			// }
+
 			display[pointer.row][pointer.cell] = input;
 			if (pointer.cell < display[0].length - 1) {
 				displayBg[pointer.row][pointer.cell] = '';
@@ -377,35 +396,43 @@
 {#if message}
 	<div class="message-overlay">{message}</div>
 {/if}
+<div class="game-wrapper">
+	<div class="display-container">
+		{#each display as row, rowIdx (rowIdx)}
+			<div class={`display-row ${shake && rowIdx === pointer.row ? 'shake' : ''}`}>
+				{#each row as cell, cellIdx (cellIdx)}
+					<div
+						class={`display-cell ${displayBg[rowIdx][cellIdx]}`}
+						role="button"
+						tabindex="0"
+						on:click={() => setPointer(rowIdx, cellIdx)}
+						on:keydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								setPointer(rowIdx, cellIdx);
+							}
+						}}
+					>
+						{cell}
+					</div>
+				{/each}
+			</div>
+		{/each}
+	</div>
 
-<div class="display-container">
-	{#each display as row, rowIdx}
-		<div class={`display-row ${shake && rowIdx === pointer.row ? 'shake' : ''}`}>
-			{#each row as cell, cellIdx}
-				<div
-					class={`display-cell ${displayBg[rowIdx][cellIdx]}`}
-					on:click={() => setPointer(rowIdx, cellIdx)}
-				>
-					{cell}
-				</div>
-			{/each}
-		</div>
-	{/each}
-</div>
-
-<div class="keyboard-container">
-	{#each KEYBOARD_ROWS as row}
-		<div class="keyboard-row">
-			{#each row as key}
-				<button
-					class={`key-btn ${keyColors[key] ?? 'key-default'} ${key === 'ENTER' || key === 'BACK' ? 'key-wide' : ''}`}
-					on:click={() => onInput(key)}
-				>
-					{getKeyLabel(key)}
-				</button>
-			{/each}
-		</div>
-	{/each}
+	<div class="keyboard-container">
+		{#each KEYBOARD_ROWS as row (row)}
+			<div class="keyboard-row">
+				{#each row as key (key)}
+					<button
+						class={`key-btn ${keyColors[key] ?? 'key-default'} ${key === 'ENTER' || key === 'BACK' ? 'key-wide' : ''}`}
+						on:click={() => onInput(key)}
+					>
+						{getKeyLabel(key)}
+					</button>
+				{/each}
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
