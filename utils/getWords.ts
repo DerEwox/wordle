@@ -1,6 +1,6 @@
-import { readTxtLines } from "./readTXT";
+import { readTxtLines } from "./readTXT.ts";
 const steps = 180 
-const offset = 1
+const offset = 3
 
 export function getWords(path: string): string[] {
     const words = readTxtLines(path);
