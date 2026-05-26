@@ -1,10 +1,9 @@
 <script lang="ts">
 	//DWDS – Digitales Wörterbuch der deutschen Sprache. Das Wortauskunftssystem zur deutschen Sprache in Geschichte und Gegenwart, hrsg. v. d. Berlin-Brandenburgischen Akademie der Wissenschaften, <https://www.dwds.de/>, abgerufen am 17.08.2025.
 
-	import { json } from '@sveltejs/kit';
 	import { isWordValid } from './checkWordDWDS';
 
-	// @ts-ignore
+ 	// @ts-expect-error - canvas-confetti has incomplete TypeScript type definitions
 	import Confetti from 'canvas-confetti';
 	import { onMount } from 'svelte';
 	import {words, start as wordListStart} from '../lib/words'
@@ -12,7 +11,6 @@
 	let message = '';
 	let shake = false;
 	let gameOver = false;
-	let showConfetti = false;
 	let disableInput = false;
 
 	interface KeyColors {
@@ -51,7 +49,7 @@
 	let displayBg: string[][] = Array.from({ length: 12 }, () => new Array<string>(10).fill(''));
 	displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
 
-	let confettiInterval: number;
+	let confettiInterval: ReturnType<typeof setInterval> | undefined;
 	//Speichern ------------------------------------------------------------------------
 
 	let stats = {
@@ -60,6 +58,7 @@
 		currentStreak: 0,
 		bestStreak: 0,
 		lastPlayed: JSON.stringify(today),
+		playedCountedDate: '',
 		distribution: Array(12).fill(0)
 	};
 
@@ -72,19 +71,39 @@
 		);
 	}
 
-	function isYesterday(date: Date): boolean {
-		const today = new Date();
-		const yesterday = new Date(today);
-		yesterday.setDate(today.getDate() - 1); // einen Tag zurück
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void onInput('ENTER');
+			return;
+		}
 
-		return (
-			date.getFullYear() === yesterday.getFullYear() &&
-			date.getMonth() === yesterday.getMonth() &&
-			date.getDate() === yesterday.getDate()
-		);
+		if (event.key === 'Backspace') {
+			event.preventDefault();
+			void onInput('BACK');
+			return;
+		}
+
+		if (event.key.length === 1 && /^[a-zA-Z]$/.test(event.key)) {
+			void onInput(event.key.toUpperCase());
+		}
 	}
 
+	// function isYesterday(date: Date): boolean {
+	// 	const today = new Date();
+	// 	const yesterday = new Date(today);
+	// 	yesterday.setDate(today.getDate() - 1); // einen Tag zurück
+
+	// 	return (
+	// 		date.getFullYear() === yesterday.getFullYear() &&
+	// 		date.getMonth() === yesterday.getMonth() &&
+	// 		date.getDate() === yesterday.getDate()
+	// 	);
+	// }
+
 	onMount(() => {
+		window.addEventListener('keydown', handleKeyDown);
+
 		const savedDisplay = localStorage.getItem('display');
 		const savedDisplayBg = localStorage.getItem('displayBg');
 		const savedKeyColor = localStorage.getItem('keyColor');
@@ -120,6 +139,30 @@
 			localStorage.setItem('stats', JSON.stringify(stats));
 		} else {
 			stats = JSON.parse(savedStats);
+		}
+
+		// Wenn der gespeicherte Stand nicht vom heutigen Tag ist,
+		// und das Spiel gestern begonnen (mindestens ein Buchstabe eingegeben)
+		// aber nicht beendet wurde (savedEnd === 'false'), dann verliert
+		// der Spieler seine aktuelle Win-Streak.
+		if (savedDateStr) {
+			const savedDate = new Date(savedDateStr);
+			if (!isToday(savedDate)) {
+				if (savedEnd === 'false' && savedDisplay !== null) {
+					try {
+						const parsedDisplay = JSON.parse(savedDisplay) as string[][];
+						const started = parsedDisplay.some((r) => r.some((c) => c !== ''));
+						if (started) {
+							stats.currentStreak = 0;
+							stats.gamesPlayed += 1
+							localStorage.setItem('stats', JSON.stringify(stats));
+							showMessage('Streak verloren', false, 10000);
+						}
+					} catch (e) {
+						console.warn('Could not parse saved display for streak check', e);
+					}
+				}
+			}
 		}
 	});
 
@@ -169,19 +212,20 @@
 		clearInterval(confettiInterval);
 	}
 
-	function showMessage(msg: string, end = true) {
+	function showMessage(msg: string, end = true, durationMs?: number) {
 		message = msg;
+		const dur = durationMs ?? (end ? 5000 : 2000);
 		if (!end) {
 			shake = true;
 			setTimeout(() => {
 				message = '';
 				shake = false;
-			}, 2000);
+			}, dur);
 		} else {
 			setTimeout(() => {
 				message = '';
 				stopConfetti();
-			}, 5000);
+			}, dur);
 		}
 	}
 
@@ -318,6 +362,10 @@ if (!(await isWordValid(nomen)) && !(await isWordValid(verb))) {
 			localStorage.setItem('end', JSON.stringify(true));
 		}
 		disableInput = false;
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
 	}
 
 	function setPointer(row: number, cell: number) {
@@ -345,6 +393,13 @@ if (!(await isWordValid(nomen)) && !(await isWordValid(verb))) {
 			displayBg[pointer.row][pointer.cell] = '';
 			await evaluate();
 		} else {
+			// Count the game as played when the user types the first letter for today's puzzle
+			const todayKey = new Date().toISOString().split('T')[0];
+			if (stats.playedCountedDate !== todayKey) {
+				stats.gamesPlayed += 1;
+				stats.playedCountedDate = todayKey;
+				localStorage.setItem('stats', JSON.stringify(stats));
+			}
 			display[pointer.row][pointer.cell] = input;
 			if (pointer.cell < display[0].length - 1) {
 				displayBg[pointer.row][pointer.cell] = '';
@@ -363,7 +418,7 @@ if (!(await isWordValid(nomen)) && !(await isWordValid(verb))) {
 	}
 </script>
 
-<a href="/stats" class="stats-button">
+<a href="/stats" class="stats-button" aria-label="View statistics">
 	<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<rect x="3" y="10" width="4" height="11" fill="white" />
 		<rect x="10" y="6" width="4" height="15" fill="white" />
@@ -376,12 +431,19 @@ if (!(await isWordValid(nomen)) && !(await isWordValid(verb))) {
 {/if}
 
 <div class="display-container">
-	{#each display as row, rowIdx}
+	{#each display as row, rowIdx (rowIdx)}
 		<div class={`display-row ${shake && rowIdx === pointer.row ? 'shake' : ''}`}>
-			{#each row as cell, cellIdx}
+			{#each row as cell, cellIdx (cellIdx)}
 				<div
 					class={`display-cell ${displayBg[rowIdx][cellIdx]}`}
+					role="button"
+					tabindex="0"
 					on:click={() => setPointer(rowIdx, cellIdx)}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							setPointer(rowIdx, cellIdx);
+						}
+					}}
 				>
 					{cell}
 				</div>
@@ -391,9 +453,9 @@ if (!(await isWordValid(nomen)) && !(await isWordValid(verb))) {
 </div>
 
 <div class="keyboard-container">
-	{#each KEYBOARD_ROWS as row}
+	{#each KEYBOARD_ROWS as row (row)}
 		<div class="keyboard-row">
-			{#each row as key}
+			{#each row as key (key)}
 				<button
 					class={`key-btn ${keyColors[key] ?? 'key-default'} ${key === 'ENTER' || key === 'BACK' ? 'key-wide' : ''}`}
 					on:click={() => onInput(key)}
