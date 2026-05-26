@@ -7,6 +7,7 @@
 	import Confetti from 'canvas-confetti';
 	import { onMount } from 'svelte';
 	import {words, start as wordListStart} from '../lib/words'
+	import UpdatePopup from '../lib/UpdatePopup.svelte';
 
 	let message = '';
 	let shake = false;
@@ -48,6 +49,9 @@
 	displayBg[pointer.row][pointer.cell] = 'display-cell-aimed';
 
 	let confettiInterval: ReturnType<typeof setInterval> | undefined;
+	let showUpdatePopup = false;
+	const updatePopupKey = 'wordle-update-popup-dismissed-v1';
+	const updatePopupCutoff = new Date('2026-06-23T00:00:00');
 	//Speichern ------------------------------------------------------------------------
 
 	let stats = {
@@ -101,6 +105,11 @@
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
+
+		const popupDismissed = localStorage.getItem(updatePopupKey) === 'true';
+		if (!popupDismissed && new Date() < updatePopupCutoff) {
+			showUpdatePopup = true;
+		}
 
 		const savedDisplay = localStorage.getItem('display');
 		const savedDisplayBg = localStorage.getItem('displayBg');
@@ -167,6 +176,11 @@
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	});
+
+	function closeUpdatePopup() {
+		localStorage.setItem(updatePopupKey, 'true');
+		showUpdatePopup = false;
+	}
 
 	//Spiel----------------------------------------------------------------------------
 
@@ -396,6 +410,11 @@
 {#if message}
 	<div class="message-overlay">{message}</div>
 {/if}
+
+{#if showUpdatePopup}
+	<UpdatePopup on:close={closeUpdatePopup} />
+{/if}
+
 <div class="game-wrapper">
 	<div class="display-container">
 		{#each display as row, rowIdx (rowIdx)}
